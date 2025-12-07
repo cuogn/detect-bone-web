@@ -62,7 +62,7 @@ def health():
 @app.get("/")
 def index():
     return render_template(
-        "sample.html",    # hoặc index.html nếu bạn muốn
+        "index.html",    # hoặc index.html nếu bạn muốn
         model_name=MODEL_NAME,
         test_acc=TEST_ACC
     )
