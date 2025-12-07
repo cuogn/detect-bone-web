@@ -39,7 +39,6 @@
     <!-- Chart.js cho biểu đồ xác suất KL -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Logic giao diện & phân tích -->
-    <script src="{{ url_for('static', filename='js/sample.js') }}"></script>
   </head>
   <body class="antialiased min-h-screen flex flex-col">
     <!-- Background Elements -->
@@ -70,7 +69,7 @@
             class="w-10 h-10 rounded bg-gradient-to-br from-medical-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20"
           >
             <img
-              src="./bones-joint-svgrepo-com.svg"
+              src="{{ url_for('static', filename='img/bones-joint-svgrepo-com.svg') }}"
               alt="Logo"
               class="w-8 h-8"
             />
@@ -853,5 +852,6 @@
         </div>
       </section>
     </main>
+    <script src="{{ url_for('static', filename='js/sample.js') }}" defer></script>
   </body>
 </html>
