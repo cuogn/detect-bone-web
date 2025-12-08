@@ -215,6 +215,47 @@ body {
   background: var(--panel);
   backdrop-filter: blur(12px);
   border: 1px solid var(--panel-border);
+  color: color-mix(in srgb, var(--fg) 94%, #ffffff 6%);
+}
+
+/* Improve contrast for text blocks inside panels */
+.glass-panel h1,
+.glass-panel h2,
+.glass-panel h3,
+.glass-panel h4,
+.glass-panel h5,
+.glass-panel h6 {
+  color: color-mix(in srgb, #ffffff 98%, #ffffff 2%);
+}
+
+.glass-panel p,
+.glass-panel li,
+.glass-panel span,
+.glass-panel small {
+  color: color-mix(in srgb, #ffffff 88%, #ffffff 12%);
+}
+
+/* Light theme: slightly darker panel so text stands out */
+[data-theme="white"] .glass-panel {
+  background: color-mix(in srgb, rgba(15, 23, 42, 0.18) 45%, #ffffff 55%);
+  border-color: rgba(15, 23, 42, 0.14);
+  box-shadow: 0 10px 32px rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="white"] .glass-panel h1,
+[data-theme="white"] .glass-panel h2,
+/* [data-theme="white"] .glass-panel h3, */
+[data-theme="white"] .glass-panel h4,
+[data-theme="white"] .glass-panel h5,
+[data-theme="white"] .glass-panel h6 {
+  color: #0f172a;
+}
+
+/* [data-theme="white"] .glass-panel p, */
+[data-theme="white"] .glass-panel li,
+[data-theme="white"] .glass-panel span,
+[data-theme="white"] .glass-panel small {
+  color: #1f2937;
 }
 
 /* Hide Scrollbar for clean UI */
@@ -323,4 +364,87 @@ body {
 [data-theme] .shadow,
 [data-theme] .shadow-lg {
   box-shadow: 0 8px 24px color-mix(in srgb, var(--fg) 12%, transparent) !important;
+}
+
+.nav-pill {
+  transition: background-color 160ms ease, color 160ms ease,
+    box-shadow 180ms ease;
+  color: color-mix(in srgb, var(--fg) 90%, #0b1120 10%);
+  background-color: transparent;
+  border: 1px solid transparent;
+}
+
+.nav-pill.nav-active {
+  background-color: color-mix(in srgb, var(--c500) 18%, var(--bg) 82%);
+  color: var(--fg);
+  border-color: color-mix(in srgb, var(--c500) 45%, transparent);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--c500) 22%, transparent);
+}
+
+[data-theme="white"] .nav-pill.nav-active {
+  background-color: color-mix(in srgb, var(--c500) 18%, #ffffff 82%);
+  color: #0f172a;
+  border-color: color-mix(in srgb, var(--c500) 35%, #0f172a 10%);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1);
+}
+
+[data-theme="white"] .nav-pill {
+  color: #1f2937;
+  background-color: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="white"] .nav-pill:hover {
+  background-color: rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+}
+
+.nav-pill:hover {
+  color: var(--fg);
+}
+
+/* Improve contrast for recommendation panel in dark themes */
+[data-theme]:not([data-theme="white"]) #rec-details,
+[data-theme]:not([data-theme="white"]) #res-rec {
+  color: #e2e8f0;
+}
+
+[data-theme]:not([data-theme="white"]) .bg-blue-900\/20 {
+  background-color: rgba(30, 41, 59, 0.5) !important;
+  border-color: rgba(148, 163, 184, 0.25) !important;
+}
+
+[data-theme]:not([data-theme="white"]) #rec-details {
+  background-color: rgba(15, 23, 42, 0.7) !important;
+  border-color: rgba(94, 234, 212, 0.25) !important;
+}
+
+/* ---- Simple reveal animations ---- */
+.will-animate {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.will-animate.preset-fade {
+  transform: none;
+}
+
+.will-animate.preset-zoom {
+  transform: scale(0.98);
+}
+
+.animate-in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ---- Micro interactions ---- */
+.btn-hover-lift {
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.btn-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(34, 211, 238, 0.25);
 }

@@ -40,12 +40,14 @@ function switchTab(tab) {
   const navHome = document.getElementById("nav-home");
   const navIntro = document.getElementById("nav-intro");
   const navKl = document.getElementById("nav-kl");
+  const navAlgo = document.getElementById("nav-algo");
   const navTool = document.getElementById("nav-tool");
 
   const resetNav = () => {
-    [navHome, navIntro, navKl, navTool].forEach((btn) => {
+    [navHome, navIntro, navKl, navTool, navAlgo].forEach((btn) => {
       if (!btn) return;
       btn.classList.remove("shadow");
+      btn.classList.remove("nav-active");
       btn.classList.add("bg-transparent", "text-slate-400");
       btn.classList.remove("bg-white/10", "text-white");
     });
@@ -56,6 +58,7 @@ function switchTab(tab) {
     toolView.classList.remove("hidden");
     resetNav();
     navTool.classList.add("shadow");
+    navTool.classList.add("nav-active");
     navTool.classList.add("bg-white/10", "text-white");
     navTool.classList.remove("bg-transparent", "text-slate-400");
     return;
@@ -68,18 +71,28 @@ function switchTab(tab) {
 
   if (tab === "home-intro") {
     navIntro.classList.add("shadow");
+    navIntro.classList.add("nav-active");
     navIntro.classList.add("bg-white/10", "text-white");
     document
       .getElementById("section-intro")
       .scrollIntoView({ behavior: "smooth" });
+  } else if (tab === "home-algo") {
+    navAlgo.classList.add("shadow");
+    navAlgo.classList.add("nav-active");
+    navAlgo.classList.add("bg-white/10", "text-white");
+    document
+      .getElementById("section-algo")
+      .scrollIntoView({ behavior: "smooth" });
   } else if (tab === "home-kl") {
     navKl.classList.add("shadow");
+    navKl.classList.add("nav-active");
     navKl.classList.add("bg-white/10", "text-white");
     document
       .getElementById("section-kl")
       .scrollIntoView({ behavior: "smooth" });
   } else {
     navHome.classList.add("shadow");
+    navHome.classList.add("nav-active");
     navHome.classList.add("bg-white/10", "text-white");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -114,8 +127,7 @@ function handleFileSelect(e) {
 function handleFile(file) {
   if (!file) return;
   const isImage =
-    file.type.startsWith("image/") ||
-    /\.(png|jpg|jpeg|bmp)$/i.test(file.name);
+    file.type.startsWith("image/") || /\.(png|jpg|jpeg|bmp)$/i.test(file.name);
   if (!isImage) {
     showError("File không hợp lệ. Chỉ nhận PNG/JPG/JPEG/BMP.");
     return;
@@ -126,9 +138,7 @@ function handleFile(file) {
   reader.onload = (e) => {
     document.getElementById("image-preview").src = e.target.result;
     document.getElementById("empty-state").classList.add("hidden");
-    document
-      .getElementById("preview-container")
-      .classList.remove("hidden");
+    document.getElementById("preview-container").classList.remove("hidden");
     document.getElementById("analyzeBtn").disabled = false;
 
     // Reset state
@@ -148,12 +158,16 @@ function clearImage() {
   document.getElementById("analyzeBtn").disabled = true;
   document.getElementById("state-result").classList.add("hidden");
   document.getElementById("state-waiting").classList.remove("hidden");
-  document
-    .getElementById("preview-container")
-    .classList.remove("scanning");
+  document.getElementById("preview-container").classList.remove("scanning");
   selectedFile = null;
   hideError();
 }
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const MIN_LOADING_MS = 5000; // thời gian loading tối thiểu (ms)
 
 // --- Analysis Logic: gọi API /predict giống index.html ---
 async function processImage() {
@@ -161,7 +175,6 @@ async function processImage() {
     alert("Vui lòng chọn ảnh X-quang trước.");
     return;
   }
-
   const btn = document.getElementById("analyzeBtn");
   btn.disabled = true;
   document.getElementById("state-waiting").classList.add("hidden");
@@ -187,13 +200,26 @@ async function processImage() {
         ? data.inference_ms
         : performance.now() - t0;
 
+    // Gửi request /recommend ngay khi có kết quả infer (không đợi hết loading)
+    fetchRecommendation({
+      class: data.class,
+      confidence: Number(data.confidence || 0),
+      probs: data.probs,
+      model: data.model,
+      inference_ms: latencyMs,
+      test_acc: data.test_acc,
+    });
+
+    const waitMs = Math.max(0, MIN_LOADING_MS - (performance.now() - t0));
+    if (waitMs > 0) {
+      await sleep(waitMs); // giữ trạng thái loading thêm một chút để tạo hiệu ứng
+    }
+
     showResultsFromData(data, latencyMs);
   } catch (err) {
     showError(err.message || "Có lỗi xảy ra khi phân tích.");
   } finally {
-    document
-      .getElementById("preview-container")
-      .classList.remove("scanning");
+    document.getElementById("preview-container").classList.remove("scanning");
     document.getElementById("state-loading").classList.add("hidden");
     btn.disabled = false;
   }
@@ -245,10 +271,7 @@ function showResultsFromData(data, latencyMs) {
       jsn: "SEVERE",
     },
   ];
-  const idx = Math.max(
-    0,
-    Math.min(4, Number.isNaN(gradeNum) ? 0 : gradeNum)
-  );
+  const idx = Math.max(0, Math.min(4, Number.isNaN(gradeNum) ? 0 : gradeNum));
   const info = meta[idx];
 
   const resGrade = document.getElementById("res-grade");
@@ -282,21 +305,17 @@ function showResultsFromData(data, latencyMs) {
     el.textContent = text;
     el.className = "text-xs font-mono py-1 px-2 rounded";
     if (text === "NONE") {
-      el.classList.add("bg-slate-700", "text-slate-400");
+      el.classList.add("bg-slate-700", "text-slate-900");
     } else if (type === "bad") {
-      el.classList.add("bg-red-500/10", "text-red-400");
+      el.classList.add("bg-red-500/10", "text-red-900");
     } else {
-      el.classList.add("bg-yellow-500/10", "text-yellow-400");
+      el.classList.add("bg-yellow-500/10", "text-yellow-900");
     }
   };
 
   setBadge("det-osteo", info.os, idx > 1 ? "bad" : "warn");
   setBadge("det-jsn", info.jsn, idx > 2 ? "bad" : "warn");
-  setBadge(
-    "det-scl",
-    idx > 2 ? "POSSIBLE" : "NONE",
-    idx > 2 ? "bad" : "warn"
-  );
+  setBadge("det-scl", idx > 2 ? "POSSIBLE" : "NONE", idx > 2 ? "bad" : "warn");
 
   if (Array.isArray(data.probs) && Array.isArray(data.classes)) {
     const canvas = document.getElementById("probChart");
@@ -347,6 +366,62 @@ function showResultsFromData(data, latencyMs) {
   }
 }
 
+async function fetchRecommendation(payload) {
+  const recEl = document.getElementById("res-rec");
+  const recBox = document.getElementById("rec-details");
+  const recBtn = document.getElementById("rec-toggle");
+
+  if (recBtn) recBtn.disabled = true;
+  if (recBox) {
+    recBox.textContent = "";
+    recBox.classList.add("hidden");
+  }
+  if (recEl) recEl.textContent = "Đang lấy khuyến nghị từ chuyên gia AI...";
+
+  try {
+    const res = await fetch("/recommend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "Gemini trả về lỗi");
+
+    if (recEl) recEl.textContent = "Có khuyến nghị. Nhấn Chi tiết để xem.";
+    if (recBox) {
+      recBox.textContent = data.advice || "Chưa có khuyến nghị.";
+      recBox.classList.add("hidden");
+    }
+    if (recBtn) {
+      recBtn.disabled = false;
+      recBtn.textContent = "Chi tiết";
+    }
+  } catch (err) {
+    if (recEl)
+      recEl.textContent =
+        "Không lấy được khuyến nghị. Vui lòng thử lại hoặc tham khảo bác sĩ.";
+    if (recBtn) {
+      recBtn.disabled = false;
+      recBtn.textContent = "Chi tiết";
+    }
+    console.error(err);
+  }
+}
+
+function toggleRecDetails() {
+  const recBox = document.getElementById("rec-details");
+  const recBtn = document.getElementById("rec-toggle");
+  if (!recBox) return;
+  const hasText = recBox.textContent && recBox.textContent.trim().length > 0;
+  if (!hasText) return;
+  recBox.classList.toggle("hidden");
+  if (recBtn) {
+    recBtn.textContent = recBox.classList.contains("hidden")
+      ? "Chi tiết"
+      : "Thu gọn";
+  }
+}
+
 function showError(msg) {
   const box = document.getElementById("errorBox");
   if (!box) return;
@@ -358,6 +433,30 @@ function hideError() {
   const box = document.getElementById("errorBox");
   if (!box) return;
   box.classList.add("hidden");
+}
+
+// Reveal-on-scroll animations
+function initRevealAnimations() {
+  const items = document.querySelectorAll("[data-animate]");
+  if (!items.length || !("IntersectionObserver" in window)) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("animate-in");
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.15 }
+  );
+
+  items.forEach((el) => {
+    const preset = el.dataset.animate || "fade";
+    el.classList.add("will-animate", `preset-${preset}`);
+    observer.observe(el);
+  });
 }
 
 // Animation for shimmer effect
@@ -391,6 +490,5 @@ window.addEventListener("DOMContentLoaded", () => {
     themeSelect.value = saved;
     themeSelect.addEventListener("change", (e) => applyTheme(e.target.value));
   }
+  initRevealAnimations();
 });
-
-

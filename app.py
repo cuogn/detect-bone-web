@@ -1,5 +1,8 @@
 import os
 from threading import Lock
+from typing import Dict, Any
+import re
+import requests
 from flask import Flask, render_template, request, jsonify
 from PIL import Image
 from model import build_model, get_preprocess, predict_pil, CLASSES
@@ -9,11 +12,14 @@ from model import build_model, get_preprocess, predict_pil, CLASSES
 # --------------------------------------------
 app = Flask(
     __name__,
-    static_folder='static',      # thư mục static/
-    template_folder='templates'  # thư mục templates/
+    static_url_path='',    # cho phép truy cập file .html / .js / .css trực tiếp
+    static_folder='.',     # thư mục chứa sample.html
+    template_folder='.'    # index.html nằm chung thư mục
 )
 
 DEVICE = os.environ.get('DEVICE', 'cpu')
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyA9-po0MOhxKOXTDcXr4OACp0Nx3CYiftw')
+GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-2.5-flash')
 
 # Tự chọn file trọng số đúng
 WEIGHTS_PATH = (
@@ -98,6 +104,143 @@ def predict():
             "test_acc": TEST_ACC
         })
 
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+def build_prompt(payload: Dict[str, Any]) -> str:
+    grade = payload.get("class", "N/A")
+    conf = float(payload.get("confidence", 0.0)) * 100
+    model = payload.get("model", MODEL_NAME)
+    test_acc = payload.get("test_acc", TEST_ACC)
+    latency = payload.get("inference_ms", "N/A")
+    probs = payload.get("probs", [])
+    probs_text = ", ".join([f"KL{idx}: {p*100:.1f}%" for idx, p in enumerate(probs)]) if probs else "Chưa có"
+
+    return (
+        "Bạn là Giáo sư, bác sĩ chấn thương chỉnh hình với 50 năm kinh nghiệm về thoái hóa khớp gối. "
+        "Hãy trả lời bằng tiếng Việt, văn phong trang nhã, ngắn gọn, súc tích, không dùng markdown hoặc ký tự đặc biệt (** *), "
+        "không viết hoa toàn bộ từ. Định dạng phản hồi:\n"
+        "- Tiêu đề: Khuyến nghị từ Giáo sư (dạng câu, không in hoa toàn bộ).\n"
+        "- Mục 1: Tóm tắt AI: 1–2 câu ngắn nêu kết quả dự đoán.\n"
+        "- Mục 2: Ý nghĩa lâm sàng: gạch đầu dòng 2–3 ý.\n"
+        "- Mục 3: Hướng xử trí đề nghị: gạch đầu dòng 3–5 ý, ưu tiên cân nhắc các lựa chọn, nhấn mạnh bác sĩ chuyên khoa quyết định.\n"
+        "- Kết thúc: Cần thăm khám trực tiếp và trao đổi với bác sĩ điều trị trước khi quyết định.\n"
+        "Luôn nhấn mạnh phải đối chiếu lâm sàng và tư vấn bác sĩ điều trị.\n\n"
+        f"Phân loại KL dự đoán: KL{grade}\n"
+        f"Độ tin cậy: {conf:.1f}%\n"
+        f"Phân bố xác suất: {probs_text}\n"
+        f"Mô hình: {model}, Test Acc: {test_acc}, Thời gian suy luận: {latency} ms\n"
+    )
+
+
+def call_gemini(prompt: str) -> str:
+    if not GEMINI_API_KEY:
+        raise RuntimeError("Thiếu GEMINI_API_KEY")
+
+    url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+    )
+    body = {
+        "contents": [
+            {
+                "parts": [{"text": prompt}]
+            }
+        ]
+    }
+
+    resp = requests.post(url, json=body, timeout=20)
+    if resp.status_code != 200:
+        raise RuntimeError(f"Gemini API error: {resp.status_code} {resp.text}")
+
+    data = resp.json()
+    try:
+        return data["candidates"][0]["content"]["parts"][0]["text"]
+    except Exception as e:
+        raise RuntimeError(f"Gemini response parse error: {e}")
+
+
+def format_recommendation(raw: str) -> str:
+    """Làm sạch và định dạng lời khuyên để gọn gàng, dễ đọc."""
+    if not raw:
+        return ""
+
+    text = raw
+    # Loại bỏ markdown cơ bản và tiêu đề thừa
+    text = re.sub(r"[*_`#]+", "", text)
+    text = text.replace("—", "-").replace("–", "-")
+    text = re.sub(r"\s+-\s+", "\n- ", text)
+    text = re.sub(r"\s*\n\s*\n+", "\n", text).strip()
+
+    # Tách thành dòng và chuẩn hóa bullet
+    lines = []
+    for line in text.split("\n"):
+        l = line.strip()
+        if not l:
+            continue
+        if l.startswith("-"):
+            l = "• " + l.lstrip("-").strip()
+        lines.append(l)
+
+    # Gom nhóm theo các tiêu đề kỳ vọng nếu có
+    ordered_keys = [
+        "Khuyến nghị từ Giáo sư",
+        "Tóm tắt AI",
+        "Ý nghĩa lâm sàng",
+        "Hướng xử trí đề nghị",
+        "Lưu ý",
+    ]
+
+    def starts_with_any(s: str, keys):
+        lower = s.lower()
+        for k in keys:
+            if lower.startswith(k.lower()):
+                return k
+        return None
+
+    buckets = {k: [] for k in ordered_keys}
+    current = None
+    for l in lines:
+        hit = starts_with_any(l, ordered_keys)
+        if hit:
+            current = hit
+            # lấy phần sau dấu ":" nếu có
+            parts = l.split(":", 1)
+            if len(parts) > 1 and parts[1].strip():
+                buckets[hit].append(parts[1].strip())
+            continue
+        if current:
+            buckets[current].append(l)
+        else:
+            buckets[ordered_keys[0]].append(l)
+
+    out_lines = []
+    for k in ordered_keys:
+        if not buckets[k]:
+            continue
+        out_lines.append(k + ":")
+        out_lines.extend(buckets[k])
+        out_lines.append("")  # blank line
+
+    return "\n".join(out_lines).strip()
+
+
+@app.post("/recommend")
+def recommend():
+    try:
+        payload = request.get_json(force=True)
+    except Exception:
+        return jsonify({"ok": False, "error": "JSON không hợp lệ"}), 400
+
+    if not isinstance(payload, dict):
+        return jsonify({"ok": False, "error": "Payload không hợp lệ"}), 400
+
+    try:
+        prompt = build_prompt(payload)
+        text = call_gemini(prompt)
+        formatted = format_recommendation(text)
+        return jsonify({"ok": True, "advice": formatted, "raw": text})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 

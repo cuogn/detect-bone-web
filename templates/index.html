@@ -35,7 +35,10 @@
         },
       };
     </script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/sample.css') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/sample.css') }}"
+    />
     <!-- Chart.js cho biểu đồ xác suất KL -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Logic giao diện & phân tích -->
@@ -78,7 +81,7 @@
             <h1
               class="font-bold text-lg tracking-tight text-white leading-none"
             >
-              SonThor<span class="text-medical-400">.AI</span>
+              XuongKhop<span class="text-medical-400">.AI</span>
             </h1>
             <p
               class="text-[11px] text-slate-400 uppercase tracking-widest font-mono mt-1"
@@ -94,28 +97,36 @@
           <button
             onclick="switchTab('home')"
             id="nav-home"
-            class="px-4 py-1.5 text-sm font-medium rounded-md text-white bg-white/10 shadow transition-all"
+            class="px-4 py-1.5 text-sm font-medium rounded-md text-white bg-white/10 shadow transition-all nav-pill"
           >
             Tổng quan
           </button>
           <button
             onclick="switchTab('home-intro')"
             id="nav-intro"
-            class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-400 hover:text-white transition-all"
+            class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-400 hover:text-white transition-all nav-pill"
           >
             Giới thiệu
           </button>
           <button
+            onclick="switchTab('home-algo')"
+            id="nav-algo"
+            class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-400 hover:text-white transition-all nav-pill"
+          >
+            Tìm hiểu thuật toán
+          </button>
+
+          <button
             onclick="switchTab('home-kl')"
             id="nav-kl"
-            class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-400 hover:text-white transition-all"
+            class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-400 hover:text-white transition-all nav-pill"
           >
             Thang KL
           </button>
           <button
             onclick="switchTab('tool')"
             id="nav-tool"
-            class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-400 hover:text-white transition-all"
+            class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-400 hover:text-white transition-all nav-pill"
           >
             Công cụ phát hiện
           </button>
@@ -152,9 +163,11 @@
         <div class="relative pt-16 pb-20 lg:pt-24 lg:pb-28">
           <div
             class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center"
+            data-animate="fade"
           >
             <h1
               class="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6"
+              data-animate="fade-up"
             >
               Chẩn đoán Thoái hóa khớp gối<br />
               <span
@@ -162,15 +175,18 @@
                 >Chính xác & Tức thì</span
               >
             </h1>
-            <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-400">
+            <p
+              class="mt-4 max-w-2xl mx-auto text-lg text-slate-400"
+              data-animate="fade-up"
+            >
               Nền tảng hỗ trợ bác sĩ phân loại KL-Score tự động từ ảnh X-quang.
               Tối ưu quy trình chẩn đoán hình ảnh với Deep Learning.
             </p>
 
-            <div class="mt-10 flex justify-center gap-4">
+            <div class="mt-10 flex justify-center gap-4" data-animate="fade-up">
               <button
                 onclick="switchTab('tool')"
-                class="group relative px-8 py-3 bg-medical-500 hover:bg-medical-400 text-white font-semibold rounded-lg shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all overflow-hidden"
+                class="group relative px-8 py-3 bg-medical-500 hover:bg-medical-400 text-white font-semibold rounded-lg shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all overflow-hidden btn-hover-lift"
               >
                 <div
                   class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"
@@ -178,7 +194,9 @@
                 <span>Truy cập Workstation</span>
               </button>
               <button
-                class="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-lg border border-white/5 transition-colors"
+                onclick="switchTab('home-algo')"
+                id="nav-algo"
+                class="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-lg border border-white/5 transition-colors btn-hover-lift"
               >
                 Tìm hiểu thuật toán
               </button>
@@ -247,6 +265,7 @@
         <div
           id="section-intro"
           class="py-16 bg-slate-950/40 border-b border-white/5"
+          data-animate="fade-up"
         >
           <div class="max-w-5xl mx-auto px-4 space-y-10">
             <div class="flex flex-col md:flex-row md:items-start gap-8">
@@ -312,8 +331,138 @@
           </div>
         </div>
 
+        <!-- Tìm hiểu thuật toán -->
+        <div
+          id="section-algo"
+          class="py-16 bg-slate-950/30 border-b border-white/5"
+          data-animate="fade-up"
+        >
+          <div class="max-w-5xl mx-auto px-4 space-y-8">
+            <div class="flex items-center gap-3">
+              <span class="w-1 h-8 bg-medical-500 rounded-full"></span>
+              <h2 class="text-2xl md:text-3xl font-bold text-white">
+                Tìm hiểu thuật toán
+              </h2>
+            </div>
+
+            <div
+              class="glass-panel p-0 overflow-hidden rounded-2xl border border-white/10 shadow-lg"
+              data-animate="zoom"
+            >
+              <div class="relative aspect-[16/9] md:aspect-[16/5] bg-slate-900">
+                <img
+                  src="https://images.unsplash.com/photo-1715531786629-bd8b2dd87066?q=30&w=1600&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=1600&q=80"
+                  alt="X-ray analysis"
+                  class="w-full h-full object-cover opacity-95"
+                />
+                <div
+                  class="absolute inset-0 bg-gradient-to-r from-[#0b1120cc] via-[#0b112080] to-transparent"
+                ></div>
+                <div class="absolute left-6 bottom-6 text-white space-y-1">
+                  <p class="text-xs uppercase tracking-[0.2em] text-slate-100">
+                    Deep Learning Imaging
+                  </p>
+                  <h3 class="text-xl font-semibold text-slate-100">
+                    Pipeline CNN cho X-quang
+                  </h3>
+                  <p class="text-sm text-slate-100">
+                    Tiền xử lý → Trích xuất đặc trưng → Phân loại KL0–KL4
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+              <div class="md:col-span-2 space-y-4">
+                <div class="glass-panel p-5 rounded-xl border border-white/10">
+                  <h3 class="text-lg font-semibold text-medical-400">
+                    Convolutional Neural Network (CNN)
+                  </h3>
+                  <p class="text-slate-300 text-sm leading-relaxed">
+                    CNN được chọn vì chuyên xử lý dữ liệu ảnh, tự động học đặc
+                    trưng (cạnh, đường cong, hình khối) qua các lớp tích chập.
+                    So với mô hình truyền thống, CNN tận dụng cấu trúc không
+                    gian của ảnh, giảm tham số và thường đạt độ chính xác cao
+                    trong các bài toán X-quang/MRI.
+                  </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div
+                    class="glass-panel p-4 rounded-xl border border-white/10"
+                  >
+                    <h4 class="text-sm font-semibold text-white">
+                      Lớp Convolution
+                    </h4>
+                    <p class="text-slate-300 text-sm mt-1 leading-relaxed">
+                      Các lớp đầu học cạnh đơn giản; lớp sâu hơn học cấu trúc
+                      phức tạp như hình dạng xương, vùng tổn thương. Chuỗi nhiều
+                      lớp chập giúp đặc trưng ngày càng trừu tượng và giàu thông
+                      tin.
+                    </p>
+                  </div>
+                  <div
+                    class="glass-panel p-4 rounded-xl border border-white/10"
+                  >
+                    <h4 class="text-sm font-semibold text-white">
+                      Lớp Pooling
+                    </h4>
+                    <p class="text-slate-300 text-sm mt-1 leading-relaxed">
+                      Max pooling giảm kích thước feature map, giảm tham số và
+                      chi phí tính toán, đồng thời giúp mô hình bền vững trước
+                      dịch chuyển/nhiễu nhỏ.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="glass-panel p-4 rounded-xl border border-white/10">
+                  <h4 class="text-sm font-semibold text-white">
+                    Lớp Fully Connected & Softmax
+                  </h4>
+                  <p class="text-slate-300 text-sm mt-1 leading-relaxed">
+                    Sau khi flatten, các lớp fully connected ánh xạ đặc trưng
+                    sang 5 mức KL. Lớp cuối dùng Softmax tạo phân bố xác suất và
+                    chọn mức KL có xác suất cao nhất.
+                  </p>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div
+                  class="glass-panel p-4 rounded-xl border border-medical-500/30 bg-medical-500/5"
+                >
+                  <h4 class="text-sm font-semibold text-medical-400">
+                    Thử nghiệm kiến trúc phổ biến
+                  </h4>
+                  <p class="text-slate-200 text-sm mt-1 leading-relaxed">
+                    ResNet, VGG16 (pretrained ImageNet) có thể fine-tune trên dữ
+                    liệu X-quang để so sánh với CNN tự xây dựng về độ chính xác,
+                    tốc độ hội tụ và thời gian suy luận.
+                  </p>
+                </div>
+                <div class="glass-panel p-4 rounded-xl border border-white/10">
+                  <h4 class="text-sm font-semibold text-white">
+                    Mục tiêu phân loại
+                  </h4>
+                  <ul
+                    class="list-disc list-inside text-slate-300 text-sm space-y-1"
+                  >
+                    <li>5 lớp đầu ra tương ứng KL0–KL4.</li>
+                    <li>Tối ưu cho ảnh X-quang khớp gối.</li>
+                    <li>Cân bằng giữa độ chính xác và tốc độ suy luận.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Mô tả chi tiết thang KL (merge từ phan-loai-kl.html) -->
-        <div id="section-kl" class="py-16 bg-slate-900/40">
+        <div
+          id="section-kl"
+          class="py-16 bg-slate-900/40"
+          data-animate="fade-up"
+        >
           <div class="max-w-6xl mx-auto px-4">
             <div class="flex items-center justify-between mb-8 gap-4">
               <h2 class="text-2xl md:text-3xl font-bold text-white flex-1">
@@ -458,7 +607,7 @@
                   />
                 </div>
                 <div class="flex-1">
-                  <h3 class="text-lg md:text-xl font-semibold text-red-400">
+                  <h3 class="text-lg md:text-xl font-semibold text-red-900">
                     KL4 — Nặng
                   </h3>
                   <p class="mt-2 text-sm text-slate-300 leading-relaxed">
@@ -772,7 +921,7 @@
                   >
                   <span
                     id="det-osteo"
-                    class="text-xs font-mono py-1 px-2 rounded bg-red-500/10 text-red-400"
+                    class="text-xs font-mono py-1 px-2 rounded bg-red-500/10 text-red-900"
                     >DETECTED</span
                   >
                 </div>
@@ -782,7 +931,7 @@
                   <span class="text-sm text-slate-300">Hẹp khe khớp (JSN)</span>
                   <span
                     id="det-jsn"
-                    class="text-xs font-mono py-1 px-2 rounded bg-yellow-500/10 text-yellow-400"
+                    class="text-xs font-mono py-1 px-2 rounded bg-yellow-500/10 text-yellow-900"
                     >MILD</span
                   >
                 </div>
@@ -794,23 +943,37 @@
                   >
                   <span
                     id="det-scl"
-                    class="text-xs font-mono py-1 px-2 rounded bg-green-500/10 text-green-400"
+                    class="text-xs font-mono py-1 px-2 rounded bg-green-500/10 text-green-900"
                     >NONE</span
                   >
                 </div>
               </div>
               <!-- Recommendation -->
               <div
-                class="bg-blue-900/20 border border-blue-500/20 p-4 rounded text-sm text-blue-200"
+                class="bg-blue-900/20 border border-blue-500/20 p-4 rounded text-sm text-blue-900"
               >
                 <strong class="block text-blue-400 text-xs uppercase mb-1"
                   >Khuyến nghị hệ thống:</strong
                 >
-                <p id="res-rec">
-                  Cần đối chiếu kết quả với lâm sàng và các xét nghiệm khác.
-                  Khuyến nghị tham khảo ý kiến bác sĩ chuyên khoa để có kế hoạch
-                  điều trị phù hợp.
-                </p>
+                <div class="flex items-center gap-3 mb-2">
+                  <p id="res-rec" class="flex-1">
+                    Cần đối chiếu kết quả với lâm sàng và các xét nghiệm khác.
+                    Khuyến nghị tham khảo ý kiến bác sĩ chuyên khoa để có kế
+                    hoạch điều trị phù hợp.
+                  </p>
+                  <button
+                    id="rec-toggle"
+                    onclick="toggleRecDetails()"
+                    class="px-3 py-1 text-xs font-semibold rounded bg-blue-500/20 text-blue-900 border border-blue-400/40 hover:bg-blue-500/30 disabled:opacity-50"
+                    disabled
+                  >
+                    Chi tiết
+                  </button>
+                </div>
+                <div
+                  id="rec-details"
+                  class="hidden whitespace-pre-line text-blue-900 bg-blue-500/5 border border-blue-500/20 rounded p-3 text-sm"
+                ></div>
               </div>
 
               <!-- Biểu đồ xác suất KL -->
@@ -833,7 +996,7 @@
 
               <div
                 id="errorBox"
-                class="mt-2 text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded px-3 py-2 hidden"
+                class="mt-2 text-xs text-red-900 bg-red-500/10 border border-red-500/30 rounded px-3 py-2 hidden"
               ></div>
             </div>
           </div>
@@ -852,6 +1015,9 @@
         </div>
       </section>
     </main>
-    <script src="{{ url_for('static', filename='js/sample.js') }}" defer></script>
+    <script
+      src="{{ url_for('static', filename='js/sample.js') }}"
+      defer
+    ></script>
   </body>
 </html>
