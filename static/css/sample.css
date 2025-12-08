@@ -331,8 +331,8 @@ body {
 }
 [data-theme] .bg-slate-700,
 [data-theme] .bg-slate-700\/50 {
-  background-color: color-mix(in srgb, var(--bg) 85%, #1f2937 15%) !important;
-  color: var(--fg) !important;
+  background-color: color-mix(in srgb, var(--bg) 85%, #01a31b 15%) !important;
+  color: #00951a !important;
 }
 [data-theme] .text-white {
   color: var(--fg) !important;

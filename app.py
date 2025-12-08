@@ -16,7 +16,7 @@ load_dotenv()
 app = Flask(
     __name__,
     static_folder='static', 
-    template_folder='templates'    # index.html nằm chung thư mục
+    template_folder='templates'
 )
 
 DEVICE = os.environ.get('DEVICE', 'cpu')
@@ -30,7 +30,7 @@ WEIGHTS_PATH = (
     else 'best_knee_resnet18.pt'
 )
 
-MODEL_NAME = 'ResNet18'
+MODEL_NAME = 'ResNet50'
 TEST_ACC = 0.678  # bạn có thể cập nhật giá trị test acc của bạn
 
 # --------------------------------------------
@@ -154,7 +154,6 @@ def call_gemini(prompt: str) -> str:
 
     resp = requests.post(url, json=body, timeout=20)
     if resp.status_code != 200:
-        # Không trả về toàn bộ thông báo để tránh lộ thông tin nhạy cảm
         raise RuntimeError(
             f"Gemini API error: {resp.status_code}. Kiểm tra API key hoặc quyền truy cập."
         )
@@ -172,13 +171,12 @@ def format_recommendation(raw: str) -> str:
         return ""
 
     text = raw
-    # Loại bỏ markdown cơ bản và tiêu đề thừa
+
     text = re.sub(r"[*_`#]+", "", text)
     text = text.replace("—", "-").replace("–", "-")
     text = re.sub(r"\s+-\s+", "\n- ", text)
     text = re.sub(r"\s*\n\s*\n+", "\n", text).strip()
 
-    # Tách thành dòng và chuẩn hóa bullet
     lines = []
     for line in text.split("\n"):
         l = line.strip()
@@ -188,7 +186,6 @@ def format_recommendation(raw: str) -> str:
             l = "• " + l.lstrip("-").strip()
         lines.append(l)
 
-    # Gom nhóm theo các tiêu đề kỳ vọng nếu có
     ordered_keys = [
         "Khuyến nghị từ Giáo sư",
         "Tóm tắt AI",
