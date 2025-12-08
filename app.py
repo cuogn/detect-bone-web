@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 # --------------------------------------------
 #  CẤU HÌNH FLASK - CHO PHÉP LOAD FILE TĨNH
 # --------------------------------------------
+load_dotenv()
+
 app = Flask(
     __name__,
     static_folder='static', 
