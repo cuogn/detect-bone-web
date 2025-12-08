@@ -12,9 +12,8 @@ from model import build_model, get_preprocess, predict_pil, CLASSES
 # --------------------------------------------
 app = Flask(
     __name__,
-    static_url_path='',    # cho phép truy cập file .html / .js / .css trực tiếp
-    static_folder='.',     # thư mục chứa sample.html
-    template_folder='.'    # index.html nằm chung thư mục
+    static_folder='static',      # thư mục static/
+    template_folder='templates'
 )
 
 DEVICE = os.environ.get('DEVICE', 'cpu')
