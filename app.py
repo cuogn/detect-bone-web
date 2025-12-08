@@ -6,19 +6,19 @@ import requests
 from flask import Flask, render_template, request, jsonify
 from PIL import Image
 from model import build_model, get_preprocess, predict_pil, CLASSES
+from dotenv import load_dotenv
 
 # --------------------------------------------
 #  CẤU HÌNH FLASK - CHO PHÉP LOAD FILE TĨNH
 # --------------------------------------------
 app = Flask(
     __name__,
-    static_url_path='',    # cho phép truy cập file .html / .js / .css trực tiếp
-    static_folder='.',     # thư mục chứa sample.html
-    template_folder='.'    # index.html nằm chung thư mục
+    static_folder='static', 
+    template_folder='templates'    # index.html nằm chung thư mục
 )
 
 DEVICE = os.environ.get('DEVICE', 'cpu')
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyA9-po0MOhxKOXTDcXr4OACp0Nx3CYiftw')
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-2.5-flash')
 
 # Tự chọn file trọng số đúng
@@ -136,7 +136,7 @@ def build_prompt(payload: Dict[str, Any]) -> str:
 
 def call_gemini(prompt: str) -> str:
     if not GEMINI_API_KEY:
-        raise RuntimeError("Thiếu GEMINI_API_KEY")
+        raise RuntimeError("Thiếu GEMINI_API_KEY (đặt biến môi trường và khởi động lại).")
 
     url = (
         f"https://generativelanguage.googleapis.com/v1beta/models/"
@@ -152,7 +152,10 @@ def call_gemini(prompt: str) -> str:
 
     resp = requests.post(url, json=body, timeout=20)
     if resp.status_code != 200:
-        raise RuntimeError(f"Gemini API error: {resp.status_code} {resp.text}")
+        # Không trả về toàn bộ thông báo để tránh lộ thông tin nhạy cảm
+        raise RuntimeError(
+            f"Gemini API error: {resp.status_code}. Kiểm tra API key hoặc quyền truy cập."
+        )
 
     data = resp.json()
     try:
