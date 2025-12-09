@@ -7,3 +7,4 @@ numpy>=1.26
 waitress>=2.1
 requests>=2.32
 python-dotenv
+openai>=1.54.0

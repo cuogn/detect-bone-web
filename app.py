@@ -20,8 +20,8 @@ app = Flask(
 )
 
 DEVICE = os.environ.get('DEVICE', 'cpu')
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-2.5-flash')
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
 
 # Tự chọn file trọng số đúng
 WEIGHTS_PATH = (
@@ -136,33 +136,36 @@ def build_prompt(payload: Dict[str, Any]) -> str:
     )
 
 
-def call_gemini(prompt: str) -> str:
-    if not GEMINI_API_KEY:
-        raise RuntimeError("Thiếu GEMINI_API_KEY (đặt biến môi trường và khởi động lại).")
+def call_openai(prompt: str) -> str:
+    if not OPENAI_API_KEY:
+        raise RuntimeError("Thiếu OPENAI_API_KEY (đặt biến môi trường và khởi động lại).")
 
-    url = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
-    )
+    url = "https://api.openai.com/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json",
+    }
     body = {
-        "contents": [
-            {
-                "parts": [{"text": prompt}]
-            }
-        ]
+        "model": OPENAI_MODEL,
+        "messages": [
+            {"role": "system", "content": "Bạn là trợ lý y khoa hỗ trợ soạn khuyến nghị."},
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.3,
+        "max_tokens": 400,
     }
 
-    resp = requests.post(url, json=body, timeout=20)
+    resp = requests.post(url, headers=headers, json=body, timeout=20)
     if resp.status_code != 200:
         raise RuntimeError(
-            f"Gemini API error: {resp.status_code}. Kiểm tra API key hoặc quyền truy cập."
+            f"OpenAI API error: {resp.status_code}. Kiểm tra API key hoặc quyền truy cập."
         )
 
     data = resp.json()
     try:
-        return data["candidates"][0]["content"]["parts"][0]["text"]
+        return data["choices"][0]["message"]["content"]
     except Exception as e:
-        raise RuntimeError(f"Gemini response parse error: {e}")
+        raise RuntimeError(f"OpenAI response parse error: {e}")
 
 
 def format_recommendation(raw: str) -> str:
@@ -240,7 +243,7 @@ def recommend():
 
     try:
         prompt = build_prompt(payload)
-        text = call_gemini(prompt)
+        text = call_openai(prompt)
         formatted = format_recommendation(text)
         return jsonify({"ok": True, "advice": formatted, "raw": text})
     except Exception as e:
